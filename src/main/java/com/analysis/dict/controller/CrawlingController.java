@@ -29,62 +29,62 @@ import org.springframework.web.servlet.ModelAndView;
 @Slf4j
 public class CrawlingController {
 
-  @GetMapping("/peopledict")
-  public HashMap<String,String> peopledict() {
-    Connection connection = null;
-    Statement stmt = null;
-    ResultSet rs = null;
-    String result = "error";
-    try {
-      Class.forName("com.mysql.cj.jdbc.Driver");
-      String sqlUrl = "jdbc:mysql://192.168.2.81:3306/dreamsearch?serverTimezone=UTC";
-      connection = DriverManager.getConnection(sqlUrl,"jwhwang","Second142857!");
-      log.info("Connection Success");
-
-      ArrayList<String> wordList = new ArrayList<>();
-      stmt = connection.createStatement();
-      rs = stmt.executeQuery("SELECT WORD FROM NATIVE_MEDIA_DICT WHERE GUBUN='1'");
-
-      File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
-      BufferedReader br = new BufferedReader(new FileReader(file));
-      String input1;
-
-      while((input1 = br.readLine())!=null) {
-        if (!wordList.contains(input1)) {
-          wordList.add(input1);
-        }
-      }
-      while(rs.next()) {
-        String input2 = rs.getString(1);
-        if (!wordList.contains(input2)) {
-          wordList.add(input2);
-        }
-      }
-
-      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-
-      for (String word : wordList) {
-        if (StringUtils.isNotEmpty(word)) {
-          Pattern pattern = Pattern.compile("[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]");
-          Matcher matcher = pattern.matcher(word);
-          if (!matcher.find()) {
-            word = word.replaceAll(" ","");
-            bw.write(word + "\n");
-          }
-        }
-      }
-      bw.close();
-      result = "success";
-      log.info(result);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    HashMap<String, String> map = new HashMap<>();
-    map.put("result",result);
-
-    return map;
-  }
+//  @GetMapping("/peopledict")
+//  public HashMap<String,String> peopledict() {
+//    Connection connection = null;
+//    Statement stmt = null;
+//    ResultSet rs = null;
+//    String result = "error";
+//    try {
+//      Class.forName("com.mysql.cj.jdbc.Driver");
+//      String sqlUrl = "jdbc:mysql://192.168.2.81:3306/dreamsearch?serverTimezone=UTC";
+//      connection = DriverManager.getConnection(sqlUrl,"jwhwang","Second142857!");
+//      log.info("Connection Success");
+//
+//      ArrayList<String> wordList = new ArrayList<>();
+//      stmt = connection.createStatement();
+//      rs = stmt.executeQuery("SELECT WORD FROM NATIVE_MEDIA_DICT WHERE GUBUN='1'");
+//
+//      File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
+//      BufferedReader br = new BufferedReader(new FileReader(file));
+//      String input1;
+//
+//      while((input1 = br.readLine())!=null) {
+//        if (!wordList.contains(input1)) {
+//          wordList.add(input1);
+//        }
+//      }
+//      while(rs.next()) {
+//        String input2 = rs.getString(1);
+//        if (!wordList.contains(input2)) {
+//          wordList.add(input2);
+//        }
+//      }
+//
+//      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+//
+//      for (String word : wordList) {
+//        if (StringUtils.isNotEmpty(word)) {
+//          Pattern pattern = Pattern.compile("[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]");
+//          Matcher matcher = pattern.matcher(word);
+//          if (!matcher.find()) {
+//            word = word.replaceAll(" ","");
+//            bw.write(word + "\n");
+//          }
+//        }
+//      }
+//      bw.close();
+//      result = "success";
+//      log.info(result);
+//    } catch (Exception e) {
+//      e.printStackTrace();
+//    }
+//
+//    HashMap<String, String> map = new HashMap<>();
+//    map.put("result",result);
+//
+//    return map;
+//  }
 
   @GetMapping("wikipedia-people-crawling")
   public HashMap<String,String> peoplecrawling() throws IOException {
