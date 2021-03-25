@@ -16,7 +16,3 @@ before_install:
 
 script: "./mvnw clean build -DskipTests"
 
-notifications:
-  email:
-    recipients:
-      - boxak@naver.com
