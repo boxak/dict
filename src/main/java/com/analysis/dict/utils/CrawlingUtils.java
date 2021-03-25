@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -43,7 +44,7 @@ public class CrawlingUtils {
     return jsonArray;
   }
 
-  public static Element getElement(String title, String fromName) {
+  public static Element getPeopleListElement(String title, String fromName) {
     String url = "";
     Element element = null;
     try {
@@ -60,7 +61,7 @@ public class CrawlingUtils {
     return element;
   }
 
-  public static Elements getNameElements (Element element) {
+  public static Elements getPeopleNameElements(Element element) {
     Elements elements = element.select("div.mw-category");
     Element element2 = null;
     Elements nameElements = null;
@@ -77,13 +78,27 @@ public class CrawlingUtils {
     return nameElements;
   }
 
+  public static Elements getCompanyNameElements() {
+    Elements elements = new Elements();
+    try {
+      String url = "https://ko.wikipedia.org/wiki/"+URLEncoder.encode("대한민국의_기업_목록","UTF-8");
+      Document document = Jsoup.connect(url).get();
+      Element divElement = document.getElementById("mw-content-text");
+      Element ulElement = divElement.select("ul").get(0);
+      elements = ulElement.select("li");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return elements;
+  }
+
   public static String parseName(Element nameElement) {
     String name = nameElement.text();
     if (name.contains("(")) {
       int index = name.indexOf("(");
       name = name.substring(0,index);
     }
-    name = name.replaceAll("[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]","");
+    name = name.replaceAll("[^\uAC00-\uD7A3xfe0-9a-zA-Z]","");
     return name.trim();
   }
 }

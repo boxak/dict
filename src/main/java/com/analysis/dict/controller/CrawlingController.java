@@ -8,31 +8,22 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URLEncoder;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @Slf4j
@@ -73,7 +64,7 @@ public class CrawlingController {
       BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 
       for (String word : wordList) {
-        if (!StringUtils.isEmpty(word)) {
+        if (StringUtils.isNotEmpty(word)) {
           Pattern pattern = Pattern.compile("[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]");
           Matcher matcher = pattern.matcher(word);
           if (!matcher.find()) {
@@ -96,66 +87,113 @@ public class CrawlingController {
   }
 
   @GetMapping("wikipedia-people-crawling")
-  public HashMap<String,String> peoplecrawling() throws IOException, ParseException {
+  public HashMap<String,String> peoplecrawling() throws IOException {
+    ArrayList<String> wordList = new ArrayList<>();
+    File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
+    BufferedReader br = new BufferedReader(new FileReader(file));
+    HashMap<String, String> map = new HashMap<>();
+    String input1;
+    String result = "fail";
+
+    try {
+      while ((input1 = br.readLine()) != null) {
+        if (!wordList.contains(input1)) {
+          wordList.add(input1);
+        }
+      }
+      br.close();
+
+      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+      String name = "";
+      String title = "";
+      JSONArray jsonArray = CrawlingUtils.getCategoryList();
+
+      for (Object obj : jsonArray) {
+        title = String.valueOf(obj);
+        name = "";
+        while (true) {
+          Element element = CrawlingUtils.getPeopleListElement(title, name);
+          Elements nameElements = null;
+          boolean isLast = false;
+          int size = 0;
+
+          Elements tmp = element.getElementsByTag("a");
+          if (!ObjectUtils.isEmpty(tmp)) {
+            size = tmp.size();
+            if (!"다음 페이지".equals(tmp.get(size - 1).text())) {
+              isLast = true;
+            }
+          }
+
+          if (!ObjectUtils.isEmpty(element)) {
+            nameElements = CrawlingUtils.getPeopleNameElements(element);
+            for (Element nameElement : nameElements) {
+              name = CrawlingUtils.parseName(nameElement);
+              if (!wordList.contains(name)) {
+                log.info(name);
+                wordList.add(name);
+              }
+            }
+          }
+          if (isLast) {
+            break;
+          }
+        }
+
+        for (String word : wordList) {
+          word = word.replaceAll(" ", "");
+          bw.write(word + "\n");
+        }
+      }
+      bw.close();
+      result = "success";
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    map.put("result", result);
+    return map;
+  }
+
+  @GetMapping("companycrawling")
+  public HashMap<String, String> crawlingCompany() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
     File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
     BufferedReader br = new BufferedReader(new FileReader(file));
     String input1;
     String result = "fail";
-
-    while((input1 = br.readLine())!=null) {
-      if (!wordList.contains(input1)) {
-        wordList.add(input1);
-      }
-    }
-    br.close();
-
-    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-    String name = "";
-    String title = "";
-    JSONArray jsonArray = CrawlingUtils.getCategoryList();
     HashMap<String, String> map = new HashMap<>();
-
-    for (Object obj : jsonArray) {
-      title = String.valueOf(obj);
-      name = "";
-      while (true) {
-        Element element = CrawlingUtils.getElement(title,name);
-        Elements nameElements = null;
-        boolean isLast = false;
-        int size = 0;
-
-        Elements tmp = element.getElementsByTag("a");
-        if (!ObjectUtils.isEmpty(tmp)) {
-          size = tmp.size();
-          if (!"다음 페이지".equals(tmp.get(size - 1).text())) {
-            isLast = true;
-          }
-        }
-
-        if (!ObjectUtils.isEmpty(element)) {
-          nameElements = CrawlingUtils.getNameElements(element);
-          for (Element nameElement : nameElements) {
-            name = CrawlingUtils.parseName(nameElement);
-            if (!wordList.contains(name)) {
-              log.info(name);
-              wordList.add(name);
-            }
-          }
-        }
-        if (isLast) {
-          break;
+    try {
+      Elements companyElements = CrawlingUtils.getCompanyNameElements();
+      while ((input1 = br.readLine()) != null) {
+        if (!wordList.contains(input1)) {
+          wordList.add(input1);
         }
       }
+      br.close();
+
+      for (Element companyElement : companyElements) {
+        String companyName = CrawlingUtils.parseName(companyElement);
+        if (StringUtils.isNotEmpty(companyName)) {
+          if (!wordList.contains(companyName)) {
+            log.info(companyName);
+            wordList.add(companyName);
+          }
+        }
+      }
+
+      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 
       for (String word : wordList) {
-        word = word.replaceAll(" ", "");
-        bw.write(word + "\n");
+        if (StringUtils.isNotEmpty(word)) {
+          bw.write(word + "\n");
+        }
       }
+      bw.close();
+      result = "success";
+    } catch (Exception e) {
+      e.printStackTrace();
     }
-    bw.close();
-    result = "success";
-    map.put("result", result);
+    map.put("result",result);
     return map;
   }
 }
