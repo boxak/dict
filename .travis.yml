@@ -17,16 +17,20 @@ before_install:
 script: "./mvnw clean install -DskipTests"
 
 before_deploy:
-  - zip -r dict ./*
+  - zip -r springboot-webservice ./*
   - mkdir -p deploy
-  - mv dict.zip deploy/dict.zip
+  - mv springboot-webservice.zip deploy/springboot-webservice.zip
 
 deploy:
-  - provider: s3
+  - provider: codedeploy
     access_key_id: $AWS_ACCESS_KEY
     secret_access_key: $AWS_SECRET_KEY
 
     bucket: travis-bucket-boxak
+    key : springboot-webservice.zip
+    bundle_type : zip
+    application : springboot-webservice
+    deployment_group : springboot-webservice-group
     region: ap-northeast-2
     skip_cleanup: true
     acl: private
