@@ -27,7 +27,7 @@ deploy:
     secret_access_key: $AWS_SECRET_KEY
 
     bucket: travis-bucket-boxak
-    key : springboot-webservice.zip
+    key : dict.zip
     bundle_type : zip
     application : springboot-webservice
     deployment_group : springboot-webservice-group
