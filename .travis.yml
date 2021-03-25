@@ -14,7 +14,7 @@ cache:
 before_install:
   - chmod +x mvnw
 
-script: "./mvnw clean build -DskipTests"
+script: "./mvnw clean install -DskipTests"
 
 notifications:
   email:
