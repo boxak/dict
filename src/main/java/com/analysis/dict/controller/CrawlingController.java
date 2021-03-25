@@ -1,5 +1,6 @@
 package com.analysis.dict.controller;
 
+import com.analysis.dict.utils.CrawlingUtils;
 import io.micrometer.core.instrument.util.StringUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -109,80 +110,51 @@ public class CrawlingController {
     }
     br.close();
 
+    BufferedWriter bw = new BufferedWriter(new FileWriter(file));
     String name = "";
     String title = "";
-    byte[] data;
-    try(InputStream in = getClass().getResourceAsStream("/static/resources/categoryList.json")) {
-      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-      data = IOUtils.toByteArray(in);
-      String jsonStr = new String(data);
-      JSONParser parser = new JSONParser();
-      JSONObject jsonObject = (JSONObject) parser.parse(jsonStr);
-      JSONArray jsonArray = (JSONArray) parser.parse(String.valueOf(jsonObject.get("category")));
+    JSONArray jsonArray = CrawlingUtils.getCategoryList();
+    HashMap<String, String> map = new HashMap<>();
 
-      for (Object obj : jsonArray) {
-        title = String.valueOf(obj);
-        name = "";
-        while(true) {
-          String url = "https://ko.wikipedia.org/w/index.php?title="+ URLEncoder.encode(title,"UTF-8")+"&pagefrom="+
-              URLEncoder.encode(name,"UTF-8");
-          Document document = Jsoup.connect(url).get();
-          Elements elements = document.select("div#mw-pages");
-          Element element = null;
-          boolean isLast = false;
-          int size = 0;
+    for (Object obj : jsonArray) {
+      title = String.valueOf(obj);
+      name = "";
+      while (true) {
+        Element element = CrawlingUtils.getElement(title,name);
+        Elements nameElements = null;
+        boolean isLast = false;
+        int size = 0;
 
-          if (!ObjectUtils.isEmpty(elements)) {
-            element = elements.get(0);
-            Elements tmp = element.getElementsByTag("a");
-            if (!ObjectUtils.isEmpty(tmp)) {
-              size = tmp.size();
-              if (!"다음 페이지".equals(tmp.get(size-1).text())) {
-                isLast = true;
-              }
-            }
+        Elements tmp = element.getElementsByTag("a");
+        if (!ObjectUtils.isEmpty(tmp)) {
+          size = tmp.size();
+          if (!"다음 페이지".equals(tmp.get(size - 1).text())) {
+            isLast = true;
           }
-          if (!ObjectUtils.isEmpty(element)) {
-            Elements elements2 = element.select("div.mw-category");
-            Element element2 = null;
-            if (!ObjectUtils.isEmpty(elements2)) {
-              element2 = elements2.get(0);
-            }
-            Elements nameElements = null;
-            if (!ObjectUtils.isEmpty(element2)) {
-              nameElements = elements2.first().getElementsByTag("a");
-            }
-
-            if (Objects.isNull(nameElements)) {
-              nameElements = new Elements();
-            }
-
-            for (Element nameElement : nameElements) {
-              name = nameElement.text();
-              if (name.contains("(")) {
-                int index = name.indexOf("(");
-                name = name.substring(0,index);
-              }
-              name = name.replaceAll("[^\uAC00-\uD7A3xfe0-9a-zA-Z\\s]","");
-              name = name.trim();
-              if (!wordList.contains(name)) {
-                log.info(name);
-                wordList.add(name);
-              }
-            }
-          }
-          if (isLast) break;
         }
 
-        for (String word : wordList) {
-          word = word.replaceAll(" ","");
-          bw.write(word+"\n");
+        if (!ObjectUtils.isEmpty(element)) {
+          nameElements = CrawlingUtils.getNameElements(element);
+          for (Element nameElement : nameElements) {
+            name = CrawlingUtils.parseName(nameElement);
+            if (!wordList.contains(name)) {
+              log.info(name);
+              wordList.add(name);
+            }
+          }
+        }
+        if (isLast) {
+          break;
         }
       }
-      bw.close();
-      result = "success";
+
+      for (String word : wordList) {
+        word = word.replaceAll(" ", "");
+        bw.write(word + "\n");
+      }
     }
-    HashMap<String, String> map = new HashMap<>();
+    bw.close();
+    result = "success";
     map.put("result", result);
     return map;
   }
