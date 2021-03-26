@@ -17,9 +17,9 @@ before_install:
 script: "./mvnw clean install -DskipTests"
 
 before_deploy:
-  - zip -r springboot-webservice ./*
+  - zip -r dict ./*
   - mkdir -p deploy
-  - mv springboot-webservice.zip deploy/springboot-webservice.zip
+  - mv dict.zip deploy/dict.zip
 
 deploy:
   - provider: codedeploy
