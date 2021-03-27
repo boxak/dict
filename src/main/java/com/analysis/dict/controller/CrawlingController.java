@@ -129,7 +129,15 @@ public class CrawlingController {
           }
         }
 
+        ArrayList<String> wordList2 = new ArrayList<>();
+
         for (String word : wordList) {
+          if (!wordList2.contains(word)) {
+            wordList2.add(word);
+          }
+        }
+
+        for (String word : wordList2) {
           word = word.replaceAll(" ", "");
           bw.write(word + "\n");
         }
@@ -167,15 +175,23 @@ public class CrawlingController {
         String companyName = CrawlingUtils.parseName(companyElement);
         if (StringUtils.isNotEmpty(companyName)) {
           if (!wordList.contains(companyName)) {
-            //log.info(companyName);
+            log.info(companyName);
             wordList.add(companyName);
           }
         }
       }
 
-      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+      ArrayList<String> wordList2 = new ArrayList<>();
 
       for (String word : wordList) {
+        if (!wordList2.contains(word)) {
+          wordList2.add(word);
+        }
+      }
+
+      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+
+      for (String word : wordList2) {
         if (StringUtils.isNotEmpty(word)) {
           //log.info(word);
           bw.write(word + "\n");
