@@ -78,7 +78,7 @@ public class CrawlingController {
   @GetMapping("wikipedia-people-crawling")
   public HashMap<String,String> peoplecrawling() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
-    File file = new File(getClass().getResource("/static/resources/userdict_ko.txt").getPath());
+    File file = new File("/home/ubuntu/app/git/userdict.txt");
     BufferedReader br = new BufferedReader(new FileReader(file));
     HashMap<String, String> map = new HashMap<>();
     String input1;
@@ -146,7 +146,7 @@ public class CrawlingController {
   @GetMapping("companycrawling")
   public HashMap<String, String> crawlingCompany() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
-    File file = new File(getClass().getResource("/static/resources/userdict_ko.txt").getPath());
+    File file = new File("/home/ubuntu/app/git/userdict.txt");
     log.info(file.getAbsolutePath());
     BufferedReader br = new BufferedReader(new FileReader(file));
     String input1;
