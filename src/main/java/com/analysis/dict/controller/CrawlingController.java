@@ -2,20 +2,6 @@ package com.analysis.dict.controller;
 
 import com.analysis.dict.utils.CrawlingUtils;
 import io.micrometer.core.instrument.util.StringUtils;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.jsoup.nodes.Element;
@@ -23,7 +9,10 @@ import org.jsoup.select.Elements;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.ModelAndView;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 @RestController
 @Slf4j
@@ -89,7 +78,7 @@ public class CrawlingController {
   @GetMapping("wikipedia-people-crawling")
   public HashMap<String,String> peoplecrawling() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
-    File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
+    File file = new File(new File(".").getAbsolutePath()+"/src/main/resources/static/resources/userdict_ko.txt");
     BufferedReader br = new BufferedReader(new FileReader(file));
     HashMap<String, String> map = new HashMap<>();
     String input1;
@@ -157,7 +146,8 @@ public class CrawlingController {
   @GetMapping("companycrawling")
   public HashMap<String, String> crawlingCompany() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
-    File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
+    File file = new File(new File(".").getAbsolutePath()+"/src/main/resources/static/resources/userdict_ko.txt");
+    log.info(file.getAbsolutePath());
     BufferedReader br = new BufferedReader(new FileReader(file));
     String input1;
     String result = "fail";
@@ -171,11 +161,13 @@ public class CrawlingController {
       }
       br.close();
 
+      log.info(String.valueOf(wordList.size()));
+
       for (Element companyElement : companyElements) {
         String companyName = CrawlingUtils.parseName(companyElement);
         if (StringUtils.isNotEmpty(companyName)) {
           if (!wordList.contains(companyName)) {
-            log.info(companyName);
+            //log.info(companyName);
             wordList.add(companyName);
           }
         }
@@ -185,6 +177,7 @@ public class CrawlingController {
 
       for (String word : wordList) {
         if (StringUtils.isNotEmpty(word)) {
+          //log.info(word);
           bw.write(word + "\n");
         }
       }

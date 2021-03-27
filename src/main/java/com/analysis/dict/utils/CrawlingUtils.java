@@ -1,14 +1,5 @@
 package com.analysis.dict.utils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONArray;
@@ -22,15 +13,17 @@ import org.jsoup.select.Elements;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URLEncoder;
+import java.util.Objects;
+
 @Slf4j
 public class CrawlingUtils {
   public static JSONArray getCategoryList() {
     JSONArray jsonArray = null;
-    byte[] data = null;
-    File file = new File("C:\\Users\\enliple\\Documents\\userdict_ko.txt");
     try(InputStream in = CrawlingUtils.class.getResourceAsStream("/static/resources/categoryList.json")) {
-      BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-      data = IOUtils.toByteArray(in);
+      byte[] data = IOUtils.toByteArray(in);
       String jsonStr = new String(data);
       JSONParser parser = new JSONParser();
       JSONObject jsonObject = (JSONObject) parser.parse(jsonStr);
