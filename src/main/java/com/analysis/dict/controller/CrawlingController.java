@@ -186,6 +186,7 @@ public class CrawlingController {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    log.info("github hook working!");
     map.put("result",result);
     return map;
   }
