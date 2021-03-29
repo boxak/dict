@@ -2,6 +2,14 @@ package com.analysis.dict.controller;
 
 import com.analysis.dict.utils.CrawlingUtils;
 import io.micrometer.core.instrument.util.StringUtils;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
 import org.jsoup.nodes.Element;
@@ -9,10 +17,6 @@ import org.jsoup.select.Elements;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
 
 @RestController
 @Slf4j
@@ -78,6 +82,7 @@ public class CrawlingController {
   @GetMapping("wikipedia-people-crawling")
   public HashMap<String,String> peoplecrawling() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
+    ArrayList<String> wordList2 = new ArrayList<>();
     File file = new File("/home/ubuntu/app/git/userdict.txt");
     BufferedReader br = new BufferedReader(new FileReader(file));
     HashMap<String, String> map = new HashMap<>();
@@ -128,19 +133,21 @@ public class CrawlingController {
             break;
           }
         }
-
-        ArrayList<String> wordList2 = new ArrayList<>();
-
-        for (String word : wordList) {
-          if (!wordList2.contains(word)) {
-            wordList2.add(word);
-          }
+      }
+      for (String word : wordList) {
+        if (!wordList2.contains(word)) {
+          wordList2.add(word);
         }
+      }
 
-        for (String word : wordList2) {
-          word = word.replaceAll(" ", "");
-          bw.write(word + "\n");
+
+      for (String word : wordList2) {
+        if (word.contains("연습장") || word.contains("독립유공자") || word.contains("독립운동가") || word.contains("대한민국") || word.contains("사용자")) continue;
+        if ("황옥".equals(word)) {
+          log.info("word : {}","황옥");
         }
+        word = word.replaceAll(" ", "");
+        bw.write(word + "\n");
       }
       bw.close();
       result = "success";
@@ -154,6 +161,7 @@ public class CrawlingController {
   @GetMapping("companycrawling")
   public HashMap<String, String> crawlingCompany() throws IOException {
     ArrayList<String> wordList = new ArrayList<>();
+    ArrayList<String> wordList2 = new ArrayList<>();
     File file = new File("/home/ubuntu/app/git/userdict.txt");
     log.info(file.getAbsolutePath());
     BufferedReader br = new BufferedReader(new FileReader(file));
@@ -180,8 +188,6 @@ public class CrawlingController {
           }
         }
       }
-
-      ArrayList<String> wordList2 = new ArrayList<>();
 
       for (String word : wordList) {
         if (!wordList2.contains(word)) {
